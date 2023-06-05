@@ -5,23 +5,23 @@ import java.net.*;
 import java.util.*;
 
 public class Main {
-    private static String hostIP = "164.164.164.164";
-    private static Integer rank = 7;
+    private static String hostIP = "164.164.164.189";
+    private static Integer rank = 9;
 
     private static final int PORT = 1234;
 
-    private static HashMap<String, Integer> localAddressAndPort = new HashMap<>();;
+    private static HashMap<String, Integer> localAddressAndRank = new HashMap<>();;
     private static HashMap<String, Integer> lastOptimalOne = new HashMap<>();;
     private static HashMap<String, Integer> mostUsableOne = new HashMap<>();;
 
     private static boolean changeServer = false;
 
-    private static boolean isServer = true;
+    private static boolean isServer = false;
 
     private static HashMap<String, Integer> hosts;
     public static void main(String[] args) throws IOException, InterruptedException, ClassNotFoundException {
         System.out.println("Hello world!");
-        localAddressAndPort.put(hostIP, PORT);
+        localAddressAndRank.put(hostIP, rank);
 
         Thread UDPEmitterThread = new Thread(() -> {
             try {
@@ -137,7 +137,7 @@ public class Main {
             }
 
             // As server
-            if(isServer && !mostUsableOne.equals(localAddressAndPort)){
+            if(isServer && !mostUsableOne.equals(localAddressAndRank)){
                 // Change to client
                 isServer = false;
 
@@ -145,7 +145,7 @@ public class Main {
             }
 
             // As client
-            if(!isServer && mostUsableOne.equals(localAddressAndPort)){
+            if(!isServer && mostUsableOne.equals(localAddressAndRank)){
                 // Change to server
                 isServer = true;
                 changeServer = false;
@@ -158,7 +158,6 @@ public class Main {
                 changeServer = true;
                 System.out.println("CHANGE SERVER AS A CLIENT DONE");
             }
-
         }
     }
 
