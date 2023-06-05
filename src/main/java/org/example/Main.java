@@ -5,38 +5,50 @@ import java.net.*;
 import java.util.*;
 
 public class Main {
-    private static String hostIP = "155.155.155.200";
-    private static Integer rank = 5;
+    private static String hostIP = "164.164.164.164";
+    private static Integer rank = 7;
+
+    private static final int PORT = 1234;
+
+    private static HashMap<String, Integer> localAddressAndPort;
+    private static HashMap<String, Integer> lastOptimalOne;
+    private static HashMap<String, Integer> mostUsableOne;
+
+    private static boolean changeServer = false;
+
+    private static boolean isServer = true;
 
     private static HashMap<String, Integer> hosts;
     public static void main(String[] args) throws IOException, InterruptedException, ClassNotFoundException {
         System.out.println("Hello world!");
 
-        Thread serverThread = new Thread(() -> {
+        localAddressAndPort.put(hostIP, PORT);
+
+        Thread UDPEmitterThread = new Thread(() -> {
             try {
-                runAsServer();
+                UDPEmitter();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
         });
-        serverThread.start();
+        UDPEmitterThread.start();
 
-        Thread clientThread = new Thread(()->{
+        Thread UDPListenerThread = new Thread(()->{
             try {
-                runAsClient();
+                UDPListener();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             } catch (ClassNotFoundException e) {
                 throw new RuntimeException(e);
             }
         });
-        clientThread.start();
+        UDPListenerThread.start();
     }
 
 
-    public static void runAsServer() throws IOException, InterruptedException {
+    public static void UDPEmitter() throws IOException, InterruptedException {
         hosts = new HashMap<>();
         hosts.put(hostIP, rank);
 
@@ -48,9 +60,7 @@ public class Main {
         byte[] dataToSend = outputByteStream.toByteArray();
 
         InetAddress broadcastAddress = InetAddress.getByName("255.255.255.255");
-        int destinationPort = 1234;
-
-
+        int destinationPort = PORT;
 
         // Socket creation
         DatagramSocket UDPSocket = new DatagramSocket();
@@ -68,16 +78,15 @@ public class Main {
         }
     }
 
-    public static void runAsClient() throws IOException, ClassNotFoundException {
+    public static void UDPListener() throws IOException, ClassNotFoundException {
         hosts.put(hostIP, rank);
 
         byte[] receiveDataBuffer = new byte[1024];
 
-        int UDPReceiverPort = 1234;
+        int UDPReceiverPort = PORT;
 
         DatagramSocket UDPSocket = new DatagramSocket(UDPReceiverPort);
         DatagramPacket UDPPacket = new DatagramPacket(receiveDataBuffer, receiveDataBuffer.length);
-
 
         while(true){
             UDPSocket.receive(UDPPacket);
@@ -115,6 +124,41 @@ public class Main {
 
             System.out.println("Most usable one");
             System.out.println(mostUsableHost);
+
+            mostUsableOne.put(mostUsableHost, highiestRank);
+
+            if(lastOptimalOne.isEmpty()){
+                lastOptimalOne.put(mostUsableHost, highiestRank);
+            }
+
+            if(!lastOptimalOne.equals(mostUsableOne)){
+                lastOptimalOne = mostUsableOne;
+
+                System.out.println("LAST OPTIMAL ONE CHANGED");
+            }
+
+            // As server
+            if(isServer && !mostUsableOne.equals(localAddressAndPort)){
+                // Change to client
+                isServer = false;
+
+                System.out.println("SERVER TO CLIENT DONE");
+            }
+
+            // As client
+            if(!isServer && mostUsableOne.equals(localAddressAndPort)){
+                // Change to server
+                isServer = true;
+                changeServer = false;
+
+                System.out.println("CLIENT TO SERVER DONE");
+            }
+
+            if(!isServer && !lastOptimalOne.equals(mostUsableOne)){
+                // Change socket
+                changeServer = true;
+                System.out.println("CHANGE SERVER AS A CLIENT DONE");
+            }
 
         }
     }
