@@ -10,9 +10,9 @@ public class Main {
 
     private static final int PORT = 1234;
 
-    private static HashMap<String, Integer> localAddressAndPort;
-    private static HashMap<String, Integer> lastOptimalOne;
-    private static HashMap<String, Integer> mostUsableOne;
+    private static HashMap<String, Integer> localAddressAndPort = new HashMap<>();;
+    private static HashMap<String, Integer> lastOptimalOne = new HashMap<>();;
+    private static HashMap<String, Integer> mostUsableOne = new HashMap<>();;
 
     private static boolean changeServer = false;
 
@@ -21,7 +21,6 @@ public class Main {
     private static HashMap<String, Integer> hosts;
     public static void main(String[] args) throws IOException, InterruptedException, ClassNotFoundException {
         System.out.println("Hello world!");
-
         localAddressAndPort.put(hostIP, PORT);
 
         Thread UDPEmitterThread = new Thread(() -> {
